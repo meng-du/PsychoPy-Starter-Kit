@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+#
+# A skeleton file for PsychoPy experiments
+# Author: Meng Du
+# August 2017
+#
+
 from psychopy_util import *
 from config import *
 
