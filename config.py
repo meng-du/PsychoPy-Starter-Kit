@@ -8,5 +8,5 @@ LOG_FOLDER = 'log/'
 RESPONSE_KEYS = ('f', 'j')
 # Instructions
 INSTR_BEGIN = 'Welcome to this example!'
-INSTR_TRIAL = 'Press F or J'
+INSTR_TRIAL = 'On the next page, press F or J to choose a star'
 INSTR_END = 'The End'

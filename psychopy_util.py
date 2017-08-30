@@ -6,7 +6,6 @@
 
 import os
 import json
-import random
 import logging
 from psychopy import gui, visual, core, event, info
 try:
@@ -52,12 +51,12 @@ class Presenter:
     """
     Methods that help to draw stuff in a window
     """
-    def __init__(self, fullscreen=True, window=None, logger=None, serial=None):
+    def __init__(self, fullscreen=True, window=None, info_logger=None, serial=None):
         """
         :param fullscreen: a boolean indicating either full screen or not
         :param window: an optional psychopy.visual.Window
                        a new full screen window will be created if this parameter is not provided
-        :param logger: (string / Unicode) a specific logger name to log information. Will log to the root logger if None
+        :param info_logger: (string / Unicode) a specific logger name to log information. Will log to the root logger if None
         :param serial: (an SerialUtil object) if specified, responses will be obtained from the serial port instead of
                        the keyboard, and stimuli will be presented for durations in terms of number of scanner triggers
                        instead of seconds
@@ -66,7 +65,7 @@ class Presenter:
         self.expInfo = info.RunTimeInfo(win=window, refreshTest=None, verbose=False)
         self.serial = serial
         # logging
-        self.logger = logging.getLogger(logger)
+        self.logger = logging.getLogger(info_logger)
         self.logger.info(self.expInfo)
         # Positions
         self.CENTRAL_POS = (0.0, 0.0)
@@ -322,13 +321,17 @@ class Presenter:
             return {'response': selection, 'rt': rt}
 
 
-class DataHandler:
-    # TODO make it a log file
-    def __init__(self, filepath, filename):
+class DataLogger:
+    """
+    Write data or messages to file
+    """
+    def __init__(self, filepath, filename, log_name='', logging_info=False):
         """
         Open file
         :param filepath: a string data file path
         :param filename: a string data file name
+        :param log_name: a name for the log
+        :param logging_info: if True, messages or data will be logged with timestamps and logging levels
         """
         if filepath[len(filepath) - 1] != '/':
             filepath += '/'
@@ -337,26 +340,16 @@ class DataHandler:
         elif os.path.isfile(filepath + filename):
             raise IOError(filepath + filename + ' already exists')
 
-        self.dataFile = open(filepath + filename, mode='w')
+        handler = logging.FileHandler(filepath + filename)
+        if logging_info:
+            handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)8s %(message)s'))
+        self.logger = logging.getLogger(log_name)
+        self.logger.setLevel(logging.INFO)
+        self.logger.addHandler(handler)
 
-    def __del__(self):
+    def write_json(self, data):
         """
-        Close file
+        Write data to file
         """
-        if hasattr(self, 'dataFile'):
-            self.dataFile.close()
-
-    def write_data(self, data):
-        """
-        Serialize data as a JSON object and write it to file with a newline character at the end
-        :param data: a JSON serializable object
-        """
-        json.dump(data, self.dataFile)
-        self.dataFile.write('\n')
-
-    def load_data(self):
-        """
-        Read the datafile
-        :return: a list of Python objects
-        """
-        return [json.loads(line) for line in self.dataFile]
+        string = json.dumps(data)
+        self.logger.info(string)

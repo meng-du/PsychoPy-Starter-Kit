@@ -2,6 +2,7 @@
 
 from psychopy_util import *
 from config import *
+import random
 
 
 def show_one_trial(images):
@@ -40,20 +41,16 @@ if __name__ == '__main__':
     show_form_dialog(sinfo, validation, order=['ID', 'Gender', 'Age', 'Mode'])
     sid = int(sinfo['ID'])
 
-    # creater logging file
-    infoLogger = logging.getLogger()
-    if not os.path.isdir(LOG_FOLDER):
-        os.mkdir(LOG_FOLDER)
-    logging.basicConfig(filename=LOG_FOLDER + str(sid) + '.log', level=logging.INFO,
-                        format='%(asctime)s %(levelname)8s %(message)s')
+    # create logging file
+    infoLogger = DataLogger(LOG_FOLDER, str(sid) + '.log', 'info_logger', logging_info=True)
     # create data file
-    dataLogger = DataHandler(DATA_FOLDER, str(sid) + '.txt')
+    dataLogger = DataLogger(DATA_FOLDER, str(sid) + '.txt', 'data_logger')
     # save info from the dialog box
-    dataLogger.write_data({
+    dataLogger.write_json({
         k: str(sinfo[k]) for k in sinfo.keys()
     })
     # create window
-    presenter = Presenter(fullscreen=(sinfo['Mode'] == 'Exp'))
+    presenter = Presenter(fullscreen=(sinfo['Mode'] == 'Exp'), info_logger='info_logger')
     # load images
     images = presenter.load_all_images(IMG_FOLDER, '.png', img_prefix='img')
     random.shuffle(images)
@@ -63,7 +60,8 @@ if __name__ == '__main__':
     # show trials
     for t in range(NUM_TRIALS):
         data = show_one_trial(images)
-        dataLogger.write_data({'trial_index': t, 'response': data})
+        infoLogger.logger.info('Writing to data file')
+        dataLogger.write_json({'trial_index': t, 'response': data})
     # end of experiment
     presenter.show_instructions(INSTR_END)
-    infoLogger.info('End of experiment')
+    infoLogger.logger.info('End of experiment')
