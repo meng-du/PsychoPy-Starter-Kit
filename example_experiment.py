@@ -16,13 +16,14 @@ def show_one_trial(images):
     presenter.show_instructions(INSTR_TRIAL)
     # choose images randomly
     random_img_index_1 = random.randrange(len(images))
-    random_img_index_2 = 1 - random_img_index_1  # this is the image that was not chosen in the above line
+    random_img_index_2 = 1 - random_img_index_1  # the other image that was not randomly chosen in the above line
     # set image positions
     images[random_img_index_1].pos = presenter.LEFT_CENTRAL_POS
     images[random_img_index_2].pos = presenter.RIGHT_CENTRAL_POS
     # show images and get user response
-    response = presenter.select_from_stimuli((images[random_img_index_1], images[random_img_index_2]),
-                                             (random_img_index_1, random_img_index_2), RESPONSE_KEYS)
+    stimuli = (images[random_img_index_1], images[random_img_index_2])
+    response = presenter.select_from_stimuli(stimuli, RESPONSE_KEYS)
+    response['selected_img'] = stimuli[response['selection']]._imName
     return response
 
 
