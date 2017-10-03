@@ -1,17 +1,13 @@
 #
 # Utilities for PsychoPy experiments
 # Author: Meng Du
-# August 2017
+# October 2017
 #
 
 import os
 import json
 import logging
 from psychopy import gui, visual, core, event, info
-try:
-    from serial_util import *
-except ImportError:
-    pass
 
 
 def show_form_dialog(items, validation_func=None, reset_after_error=True, title='', order=(), tip=None, logger=None):
@@ -51,19 +47,17 @@ class Presenter:
     """
     Methods that help to draw stuff in a window
     """
-    def __init__(self, fullscreen=True, window=None, info_logger=None, serial=None):
+    def __init__(self, fullscreen=True, window=None, info_logger=None, trigger=None):
         """
         :param fullscreen: a boolean indicating either full screen or not
         :param window: an optional psychopy.visual.Window
                        a new full screen window will be created if this parameter is not provided
         :param info_logger: (string / Unicode) a specific logger name to log information. Will log to the root logger if None
-        :param serial: (an SerialUtil object) if specified, responses will be obtained from the serial port instead of
-                       the keyboard, and stimuli will be presented for durations in terms of number of scanner triggers
-                       instead of seconds
+        :param trigger: an ASCII character trigger when this is an fMRI task
         """
         self.window = window if window is not None else visual.Window(fullscr=fullscreen)
         self.expInfo = info.RunTimeInfo(win=window, refreshTest=None, verbose=False)
-        self.serial = serial
+        self.trigger = trigger
         # logging
         self.logger = logging.getLogger(info_logger)
         self.logger.info(self.expInfo)
@@ -78,6 +72,17 @@ class Presenter:
         self.FEEDBACK_POS_Y_DIFF = -0.4
         # Selection
         self.SELECTED_STIM_OPACITY_CHANGE = 0.5
+
+    def pixel2norm(self, length):
+        """
+        Convert a length in pixels to two lengths in Psychopy normalised units on x and y axis respectively
+        :param length: an integer or float length in pixels
+        :return: a tuple of two float lengths
+        """
+        x0, y0 = self.window.size
+        x = float(length) / x0
+        y = float(length) / y0
+        return x, y
 
     def load_all_images(self, img_path, img_extension, img_prefix=None):
         """
@@ -99,7 +104,7 @@ class Presenter:
     def draw_stimuli_for_duration(self, stimuli, duration, wait_trigger=False):
         """
         Display the given stimuli for a given duration. If wait_trigger is True, the stimuli will be displayed until
-        a trigger is received
+        a <duration> number of triggers are received
 
         :param stimuli: either a psychopy.visual stimulus or a list of them to draw
         :param duration: a float time duration in seconds, or if waiting for a scanner trigger, an integer number of
@@ -115,9 +120,9 @@ class Presenter:
         self.window.flip()
         if duration is not None:
             if wait_trigger:
-                if self.serial is None:
-                    raise RuntimeError('Serial device uninitialized')
-                self.serial.wait_for_triggers(duration)
+                for _ in range(duration):
+                    event.waitKeys(keyList=[self.trigger])
+                    self.logger.info('Received trigger ' + self.trigger)
             else:
                 core.wait(duration)
 
@@ -128,30 +133,41 @@ class Presenter:
         :param max_wait: a numeric value indicating the maximum number of seconds to wait for keys.
                          By default it waits forever
         :param wait_trigger: (boolean) whether to wait for triggers or seconds
-        :return: a tuple (key_pressed, reaction_time_in_seconds)
-                 when using scanner triggers, return a list of lists of responses between each trigger
+                             If true, the program will wait for a <max_wait> number of triggers before proceeding
+        :return: a tuple (key_pressed, reaction_time_in_seconds). Only the first response will be returned if there
+                 are multiple.
         """
         if max_wait is None:
             max_wait = float('inf')
         self.draw_stimuli_for_duration(stimuli, duration=None)
 
         if wait_trigger:
-            if self.serial is None:
-                raise RuntimeError('Serial device uninitialized')
             if isinstance(max_wait, int):
                 duration = max_wait
             else:
                 duration = 1
                 self.logger.warning('Invalid duration, waiting for one trigger')  # TODO
-            response = self.serial.wait_for_triggers(duration)
+            i = 0
+            responses = []
+            clock = core.Clock()
+            while i != duration:
+                results = event.waitKeys(keyList=[self.trigger] + response_keys, timeStamped=clock)
+                for resp in results:
+                    self.logger.info('Received signal ' + resp[0] + ' after ' + str(resp[1]) + ' seconds')
+                    if resp[0] == self.trigger:
+                        i += 1
+                    else:
+                        responses.append(resp)
+            if len(responses) == 0:
+                return None
+            return responses[0]
         else:
             # wait for a time duration
             response = event.waitKeys(maxWait=max_wait, keyList=response_keys, timeStamped=core.Clock())
             if response is None:  # timed out without a response
                 return None
-            response = response[0]
-
-        return response
+            self.logger.info('Received response ' + str(response))
+            return response[0]
 
     def show_instructions(self, instructions, position=(0, 0), other_stim=(), key_to_continue='space',
                           next_page_text='Press space to continue', next_page_pos=(0.0, -0.8), duration=None,
@@ -179,19 +195,31 @@ class Presenter:
             instr_stim = visual.TextStim(self.window, text=instr, pos=position, wrapWidth=1.5)
             log_text = 'Instruction: ' + instr[:30].replace('\n', ' ')
             self.logger.info(log_text + '...' if len(instr) >= 30 else log_text)
-            self.draw_stimuli_for_response([instr_stim, next_page_stim] + list(other_stim), [key_to_continue],
+            self.draw_stimuli_for_response(list(other_stim) + [instr_stim, next_page_stim], [key_to_continue],
                                            max_wait=duration, wait_trigger=wait_trigger)
         self.logger.info('End of instructions')
 
-    def show_fixation(self, duration, wait_trigger=False):
+    def show_fixation(self, duration, pos=(0, 0), wait_trigger=False):
+        """
+        Show a '+' for a specified duration
+        :param duration: a time duration in seconds
+        :param pos: a position tuple for the fixation
+        """
+        plus_sign = visual.TextStim(self.window, text='+', pos=pos)
+        self.logger.info('Showing fixation at ' + str(pos) + ' for ' + str(duration) + ' second(s)')
+        self.draw_stimuli_for_duration(plus_sign, duration, wait_trigger)
+        self.logger.info('End of fixation')
+
+    def show_two_fixations(self, duration, color, pos=(0, 0), wait_trigger=False):
         """
         Show a '+' for a specified duration
         :param duration: a time duration in seconds
         """
-        plus_sign = visual.TextStim(self.window, text='+')
-        self.logger.info('Showing fixation')
-        self.draw_stimuli_for_duration(plus_sign, duration, wait_trigger)
-        self.logger.info('End of fixation')
+        plus_signs = [visual.TextStim(self.window, text='+'),
+                      visual.TextStim(self.window, text='+', pos=pos, color=color, height=0.2)]
+        self.logger.info('Showing fixation at ' + str(pos))
+        self.draw_stimuli_for_duration(plus_signs, duration, wait_trigger)
+        self.logger.info('End of fixations')
 
     def show_blank_screen(self, duration, wait_trigger=False):
         """
