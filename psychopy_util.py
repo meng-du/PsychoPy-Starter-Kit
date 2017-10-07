@@ -205,10 +205,10 @@ class Presenter:
         :param duration: a time duration in seconds
         :param pos: a position tuple for the fixation
         """
-        plus_sign = visual.TextStim(self.window, text='+', pos=pos)
+        plus_sign = visual.TextStim(self.window, text='+', pos=pos, height=0.2)
         self.logger.info('Showing fixation at ' + str(pos) + ' for ' + str(duration) + ' second(s)')
         self.draw_stimuli_for_duration(plus_sign, duration, wait_trigger)
-        self.logger.info('End of fixation')
+        self.logger.info('End of fixations')
 
     def show_two_fixations(self, duration, color, pos=(0, 0), wait_trigger=False):
         """
