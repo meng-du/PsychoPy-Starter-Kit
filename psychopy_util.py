@@ -336,7 +336,7 @@ class Presenter:
         response = self.draw_stimuli_for_response(stimuli, response_keys.keys(), max_wait, resp_wait_trigger)
         self.logger.info('End of options')
         if response is None or len(response) == 0:  # response too slow
-            if no_response_stim is None:
+            if no_response_stim is None or no_resp_feedback_time <= 0:
                 return
             # show feedback and return
             self.logger.info('No response received, showing feedback')
@@ -350,16 +350,17 @@ class Presenter:
 
             # post selection screen
             selected_stim = stimuli[selection]
-            self.logger.info('Showing highlighted selection')
-            if highlight is None:
-                selected_stim.opacity -= self.SELECTED_STIM_OPACITY_CHANGE
-                self.draw_stimuli_for_duration(stimuli, post_selection_time, post_select_wait_trigger)
-                selected_stim.opacity += self.SELECTED_STIM_OPACITY_CHANGE
-            else:
-                highlight.pos = selected_stim.pos
-                stimuli.append(highlight)
-                self.draw_stimuli_for_duration(stimuli, post_selection_time, post_select_wait_trigger)
-            self.logger.info('End of highlighted selection')
+            if post_selection_time > 0:
+                self.logger.info('Showing highlighted selection')
+                if highlight is None:
+                    selected_stim.opacity -= self.SELECTED_STIM_OPACITY_CHANGE
+                    self.draw_stimuli_for_duration(stimuli, post_selection_time, post_select_wait_trigger)
+                    selected_stim.opacity += self.SELECTED_STIM_OPACITY_CHANGE
+                else:
+                    highlight.pos = selected_stim.pos
+                    stimuli.append(highlight)
+                    self.draw_stimuli_for_duration(stimuli, post_selection_time, post_select_wait_trigger)
+                self.logger.info('End of highlighted selection')
 
             return {'selection': selection, 'rt': rt}
 
