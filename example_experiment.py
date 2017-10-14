@@ -28,7 +28,7 @@ def show_one_trial(images):
 
 
 def validation(items):
-    # check empty field
+    # check for empty fields
     for key in items.keys():
         if items[key] is None or len(items[key]) == 0:
             return False, str(key) + ' cannot be empty.'
@@ -44,8 +44,8 @@ def validation(items):
 
 if __name__ == '__main__':
     # subject ID dialog
-    sinfo = {'ID': '', 'Gender': ['Female', 'Male'], 'Age': '', 'Mode': ['Test', 'Exp']}
-    show_form_dialog(sinfo, validation, order=['ID', 'Gender', 'Age', 'Mode'])
+    sinfo = {'ID': '', 'Gender': ['Female', 'Male'], 'Age': '', 'Screen': ['Test', 'Exp']}
+    show_form_dialog(sinfo, validation, order=['ID', 'Gender', 'Age', 'Screen'])
     sid = int(sinfo['ID'])
 
     # create logging file
@@ -57,7 +57,7 @@ if __name__ == '__main__':
         k: str(sinfo[k]) for k in sinfo.keys()
     })
     # create window
-    presenter = Presenter(fullscreen=(sinfo['Mode'] == 'Exp'), info_logger='info_logger')
+    presenter = Presenter(fullscreen=(sinfo['Screen'] == 'Exp'), info_logger='info_logger')
     # load images
     images = presenter.load_all_images(IMG_FOLDER, '.png', img_prefix='img')
     random.shuffle(images)
