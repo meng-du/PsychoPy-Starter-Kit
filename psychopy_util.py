@@ -195,7 +195,9 @@ class Presenter:
             instr_stim = visual.TextStim(self.window, text=instr, pos=position, wrapWidth=1.5)
             log_text = 'Instruction: ' + instr[:30].replace('\n', ' ')
             self.logger.info(log_text + '...' if len(instr) >= 30 else log_text)
-            self.draw_stimuli_for_response(list(other_stim) + [instr_stim, next_page_stim], [key_to_continue],
+            if type(key_to_continue) != list:
+                key_to_continue = [key_to_continue]
+            self.draw_stimuli_for_response(list(other_stim) + [instr_stim, next_page_stim], key_to_continue,
                                            max_wait=duration, wait_trigger=wait_trigger)
         self.logger.info('End of instructions')
 
