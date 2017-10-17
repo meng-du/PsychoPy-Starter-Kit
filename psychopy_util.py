@@ -80,8 +80,8 @@ class Presenter:
         :return: a tuple of two float lengths
         """
         x0, y0 = self.window.size
-        x = float(length) / x0
-        y = float(length) / y0
+        x = 2.0 * length / x0
+        y = 2.0 * length / y0
         return x, y
 
     def load_all_images(self, img_path, img_extension, img_prefix=None):
