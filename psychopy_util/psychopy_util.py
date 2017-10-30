@@ -10,7 +10,7 @@ import logging
 from psychopy import gui, visual, core, event, info
 
 
-def show_form_dialog(items, validation_func=None, reset_after_error=True, title='', order=(), tip=None, logger=None):
+def show_form_dialog(items, validation_func=None, reset_after_error=True, title='', order=(), tip={}, logger=None):
     """
     Show a form to be filled within a dialog. The user input values will be stored in items.
     See wxgui.DlgFromDict
