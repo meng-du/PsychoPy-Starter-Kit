@@ -9,7 +9,7 @@ from psychopy import visual, core, event
 # TODO overflow control? try TextBox?
 
 
-class DumbTextInput:
+class DumbTextInput(object):
     """
     DumbTextInput is a rudimentary textbox that allows users to enter texts in psychopy with a standard English keyboard.
     It draws itself right after being created, and other psychopy.visual stimuli could be drawn together with it.
