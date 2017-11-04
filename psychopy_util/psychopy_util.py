@@ -43,7 +43,7 @@ def show_form_dialog(items, validation_func=None, reset_after_error=True, title=
             core.quit()
 
 
-class Presenter:
+class Presenter(object):
     """
     Methods that help to draw stuff in a window
     """
@@ -367,7 +367,7 @@ class Presenter:
             return {'selection': selection, 'rt': rt}
 
 
-class DataLogger:
+class DataLogger(object):
     """
     Write data or messages to file
     """
