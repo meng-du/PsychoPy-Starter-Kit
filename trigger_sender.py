@@ -28,7 +28,7 @@ import pyautogui
 NUM_PRE_RUN = 20
 
 
-if __name__ == '__main__':
+def main():
     try:
         # get command line arguments
         key = sys.argv[1]
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         interval -= avg_time
         start_time = time.time()
 
-        # press keyboard
+        # press key
         for _ in range(num):
             pyautogui.press(key)
             time.sleep(interval)
@@ -61,3 +61,7 @@ if __name__ == '__main__':
               '<trigger key> '
               '<number of triggers> '
               '<time interval between two triggers (in seconds)>')
+
+
+if __name__ == '__main__':
+    main()
