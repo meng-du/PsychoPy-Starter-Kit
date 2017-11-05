@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# A skeleton file for PsychoPy experiments
+# An example experiment using psychopy utilities
 # Author: Meng Du
 # August 2017
 #
@@ -42,7 +42,7 @@ def validation(items):
     return True, ''
 
 
-if __name__ == '__main__':
+def main():
     # subject ID dialog
     sinfo = {'ID': '', 'Gender': ['Female', 'Male'], 'Age': '', 'Screen': ['Test', 'Exp']}
     show_form_dialog(sinfo, validation, order=['ID', 'Gender', 'Age', 'Screen'])
@@ -72,3 +72,6 @@ if __name__ == '__main__':
     # end of experiment
     presenter.show_instructions(INSTR_END)
     infoLogger.logger.info('End of experiment')
+
+if __name__ == '__main__':
+    main()
