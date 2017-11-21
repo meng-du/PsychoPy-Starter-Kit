@@ -35,10 +35,10 @@ def flatten(obj, obj_id=None):
     def _flatten(x, name=''):  # recursion
         if type(x) is dict:
             for k in x:
-                if len(k) == 13 and k[:2] == '14':  # is a time stamp, skip TODO this is only for trust game
-                    _flatten(x[k], name)
-                else:
-                    _flatten(x[k], name + k + '.')
+#                 if len(k) == 13 and k[:2] == '14':  # is a time stamp, skip TODO this is only for trust game
+#                     _flatten(x[k], name)
+#                 else:
+                _flatten(x[k], name + k + '.')
         elif type(x) is list:
             for i, a in enumerate(x):
                 _flatten(a, name + str(i) + '.')
