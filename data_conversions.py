@@ -3,9 +3,10 @@ import yaml
 import csv
 
 """
-This script contains a few functions to process/convert data files,
+This script contains a few functions to convert data files between
+json, csv and python dictionary/list, or wide and long format.
 e.g. converting a json file to a python dictionary or a pickle file,
-     flatten the dictionary/json to a list,
+     flatten the dictionary to a list,
      converting data from wide format to long format,
      save the list as a csv file, etc.
 
