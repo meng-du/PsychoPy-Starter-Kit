@@ -14,8 +14,8 @@ Example:
     # this will take a while, so if you need to load the same json file multiple times
     # you can save it as a pickle file and then read from the pickle file instead
     data_dict = load_json('data.json', pkl_file='temp.pkl')
-    with open('temp.pkl', 'r') as infile:
-        data_dict = pickle.load(infile)
+    # with open('temp.pkl', 'r') as infile:
+    #     data_dict = pickle.load(infile)
 
     # flatten the dictionary to a list
     data_list = [flatten(data_dict[sid], sid) for sid in data_dict]  # data_list is a list of tuples (col_names, values)
