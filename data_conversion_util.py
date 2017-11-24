@@ -218,12 +218,12 @@ def cut_and_stack(wide_cols, wide_data, cut_start, cut_length, cut_number, skip_
     return cols, data
 
 
-def list2csv(data, csv_filename, col_names=None):
+def list2csv(data, csv_filename, col_names=None, delimiter=','):
     """
     Write a 2-dimensional data list to a csv file.
     """
     with open(csv_filename, 'w') as outfile:
-        writer = csv.writer(outfile, delimiter=',')
+        writer = csv.writer(outfile, delimiter=delimiter)
         if col_names:
             writer.writerow(col_names)
         for row in data:
