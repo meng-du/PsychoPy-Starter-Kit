@@ -1,7 +1,7 @@
 #
 # Utilities for PsychoPy experiments
 # Author: Meng Du
-# October 2017
+# August 2018
 #
 
 import os
@@ -233,6 +233,47 @@ class Presenter(object):
         self.draw_stimuli_for_duration(blank, duration, wait_trigger)
         self.logger.info('End of blank screen')
 
+    @staticmethod
+    def make_grid(num_col, num_row, width=1.8, height=1.8, x_center=0, y_center=0):
+        """
+        Return a list of evenly divided positions accroding to the given parameters
+        :param num_col: (int) number of columns
+        :param num_row: (int) number of rows
+        :param width: (float, < 2.0) width of the grid; ignored if there's only 1 column
+        :param height: (float, < 2.0) height of the grid; ignored if there's only 1 row
+        :param x_center: (float) an x offset for the entire grid, which will
+                         be added to all x positions
+        :param y_center: (float) a y offset to add to all y positions
+        :return: a list of tuples indicating (x, y) positions, ordered from top to bottom
+                 and from left to right
+                 Example: [(-1.0, 1.0), (1.0, 1.0), (-1.0, -1.0), (1.0, -1.0)]
+        """
+        width = float(width)
+        height = float(height)
+        # x
+        if num_col > 1:
+            interval = width / (num_col - 1)
+            pos_x = [float(pos) / 1000 + x_offset for pos in 
+                     range(-round(width * 500), round(width * 500 + interval * 1000),
+                           round(interval * 1000))]
+            pos_x = pos_x[:num_col]  # sometimes extra numbers are produced due to rounding
+        else:
+            pos_x = [float(x_offset) for _ in range(num_col)]
+        # y
+        if num_row > 1:
+            interval = height / (num_row - 1)
+            pos_y = [float(pos) / 1000 + y_offset for pos in 
+                     range(-round(height * 500), round(height * 500 + interval * 1000),
+                           round(interval * 1000))]
+            pos_y = pos_y[:num_row]
+        else:
+            pos_y = [float(y_offset) for _ in range(num_row)]
+        # results
+        results = []
+        for y in reversed(pos_y):
+            results += [(x, y) for x in pos_x]
+        return results
+
     def likert_scale(self, instruction, num_options, option_texts=None, option_labels=None, side_labels=None,
                      response_keys=None, wait_trigger=False):
         """
@@ -276,7 +317,8 @@ class Presenter(object):
         # positions of options/labels
         scale_width = (len(option_texts) - 1) * self.LIKERT_SCALE_OPTION_INTERVAL
         if scale_width > 2:
-            pos_x = [float(pos) / 100 for pos in range(-100, 100, int(200 / (len(option_texts) - 1)))]
+            positions = Presenter.make_grid(num_col=len(option_texts), num_row=1, width=2, height=2,
+                                            )
         else:
             pos_x = [float(pos) / 100 for pos in range(-int(scale_width * 50), int(scale_width * 50) + 2,
                                                        int(self.LIKERT_SCALE_OPTION_INTERVAL * 100))]
