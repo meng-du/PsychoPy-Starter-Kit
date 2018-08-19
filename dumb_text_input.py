@@ -1,7 +1,7 @@
 #
 # A rudimentary text input class for PsychoPy experiments
 # Author: Meng Du
-# May 2017
+# August 2018
 #
 
 from psychopy import visual, core, event
@@ -24,11 +24,14 @@ class DumbTextInput(object):
     It's only been tested on Macs so far.
     """
     def __init__(self, window, width, height, pos=(0, 0), bg_color='white', text_color='black', line_height=0.05,
-                 padding=0.01, other_stim=(), **kwargs):
+                 padding=0.01, max_length=float('inf'), valid_chars=None, other_stim=(), **kwargs):
         """
         Accept all input parameters that psychopy.visual.TextStim accepts
+        :param max_length: (int) maximum length of the text input
+        :param valid_chars: a list of characters that are allowed as input;
+                           if None, all letters, numbers and standar characters are allowed
         :param padding: (float) distance between text and the border of the text box
-        :param other_stim: a list of other psychopy stimmuli to be displayed together
+        :param other_stim: a list of other psychopy stimuli to be displayed together
         """
         self._key_mapping = {
             'grave': ('`', '~'),
@@ -57,6 +60,8 @@ class DumbTextInput(object):
         }
         self.window = window
         self.other_stim = other_stim
+        self.max_length = max_length
+        self.valid_chars = valid_chars
         self.text = ''
         text_pos = (pos[0] - float(width) / 2 + padding, pos[1] + float(height) / 2 - padding)
         wrap_width = width - padding * 2
@@ -83,26 +88,30 @@ class DumbTextInput(object):
         text_changed = True
         key_name = key[0]
         modifiers = key[1]
-        if len(key_name) == 1:
-            if key_name.isalpha():
-                char = key_name.upper() if modifiers['shift'] or modifiers['capslock'] else key_name
-            else:
-                char = self._key_mapping[key_name] if modifiers['shift'] else key_name
-            self.text += char
-        elif key_name in self._key_mapping:  # key_name length > 1
-            if isinstance(self._key_mapping[key_name], tuple):
-                self.text += self._key_mapping[key_name][1] if modifiers['shift'] else self._key_mapping[key_name][0]
-            elif any(modifiers.values()):
-                text_changed = False  # no text added if pressing return or space with a modifier
-            else:
-                self.text += self._key_mapping[key_name]
-        elif key_name == 'backspace':
-            if any(modifiers.values()):
-                text_changed = False  # no text removed if pressing backspace with a modifier
-            else:
-                self.text = self.text[:-1]
-        else:
+        if key_name == 'backspace':
+            self.text = self.text[:-1]
+        elif len(self.text) == self.max_length:  # exceeding the maximum length
             text_changed = False
+        else:
+            # get character entered
+            char = ''
+            if len(key_name) == 1:
+                if key_name.isalpha():
+                    char = key_name.upper() if modifiers['shift'] or modifiers['capslock'] else key_name
+                else:
+                    char = self._key_mapping[key_name] if modifiers['shift'] else key_name
+            elif key_name in self._key_mapping:  # key_name length > 1
+                if isinstance(self._key_mapping[key_name], tuple):
+                    char = self._key_mapping[key_name][1] if modifiers['shift'] else self._key_mapping[key_name][0]
+                else:
+                    char = self._key_mapping[key_name]
+            else:
+                text_changed = False
+            # check if character is allowed
+            if (self.valid_chars is None) or (char in self.valid_chars):
+                self.text += char
+            else:
+                text_changed = False
 
         if text_changed:
             self.draw()
