@@ -253,18 +253,18 @@ class Presenter(object):
         # x
         if num_col > 1:
             interval = width / (num_col - 1)
-            pos_x = [float(pos) / 1000 + x_offset for pos in 
-                     range(-round(width * 500), round(width * 500 + interval * 1000),
-                           round(interval * 1000))]
+            pos_x = [float(pos) / 1000 + x_center for pos in 
+                     range(-int(round(width * 500)), int(round(width * 500 + interval * 1000)),
+                           int(round(interval * 1000)))]
             pos_x = pos_x[:num_col]  # sometimes extra numbers are produced due to rounding
         else:
             pos_x = [float(x_offset) for _ in range(num_col)]
         # y
         if num_row > 1:
             interval = height / (num_row - 1)
-            pos_y = [float(pos) / 1000 + y_offset for pos in 
-                     range(-round(height * 500), round(height * 500 + interval * 1000),
-                           round(interval * 1000))]
+            pos_y = [float(pos) / 1000 + y_center for pos in 
+                     range(-int(round(height * 500)), int(round(height * 500 + interval * 1000)),
+                           int(round(interval * 1000)))]
             pos_y = pos_y[:num_row]
         else:
             pos_y = [float(y_offset) for _ in range(num_row)]
