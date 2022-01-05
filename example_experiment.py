@@ -11,7 +11,7 @@ from config import *
 import random
 
 
-def show_one_trial(images):
+def show_one_trial(images, presenter):
     # show instruction
     presenter.show_instructions(INSTR_TRIAL)
     # choose images randomly
@@ -66,7 +66,7 @@ def main():
     presenter.show_instructions(INSTR_BEGIN)
     # show trials
     for t in range(NUM_TRIALS):
-        data = show_one_trial(images)
+        data = show_one_trial(images, presenter)
         infoLogger.logger.info('Writing to data file')
         dataLogger.write_json({'trial_index': t, 'response': data})
     # end of experiment
